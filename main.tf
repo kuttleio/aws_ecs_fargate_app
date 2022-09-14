@@ -163,7 +163,7 @@ resource aws_lb_target_group main {
     unhealthy_threshold = 10
     timeout             = 5
     interval            = 10
-    path                = "/health"
+    path                = var.healthcheck_path
     port                = var.service_port
   }
 }

@@ -135,6 +135,11 @@ variable retention_in_days {
   default     = 7
   description = "Amount of days to store service logs"
 }
+variable healthcheck_path {
+  type        = string
+  default     = "/health"
+  description = "Path for healthchecks (only for public services)"
+}
 
 variable mount_points {
   type = list(object({
