@@ -12,7 +12,7 @@ resource aws_cloudwatch_log_group ecs_group {
 #    ECS Service
 # ---------------------------------------------------
 resource aws_ecs_service main {
-  name                                = "${var.name_prefix}-${var.wenv}-${var.service_name}"
+  name                                = "${var.name_prefix}-${var.wznv}-${var.service_name}"
   cluster                             = var.cluster_name
   propagate_tags                      = "SERVICE"
   deployment_maximum_percent          = 200
@@ -62,7 +62,7 @@ resource aws_ecs_service main {
 # ---------------------------------------------------
 resource aws_service_discovery_service main {
   count = var.public == true ? 0 : 1
-  name  = "${var.name_prefix}-${var.wenv}-${var.service_name}"
+  name  = "${var.name_prefix}-${var.zenv}-${var.service_name}"
   tags  = merge(var.standard_tags, tomap({ Name = var.service_name }))
 
   dns_config {
@@ -134,7 +134,7 @@ module main_container_definition {
 #     Task Definition
 # ---------------------------------------------------
 resource aws_ecs_task_definition main {
-  family                    = "${var.name_prefix}-${var.wenv}-${var.service_name}"
+  family                    = "${var.name_prefix}-${var.zenv}-${var.service_name}"
   requires_compatibilities  = [var.launch_type]
   execution_role_arn        = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/ecsTaskExecutionRole"
   cpu                       = var.task_cpu > var.container_cpu ? var.task_cpu : var.container_cpu
@@ -151,7 +151,7 @@ resource aws_ecs_task_definition main {
 # ---------------------------------------------------
 resource aws_lb_target_group main {
   count                         = var.public == true ? 1 : 0
-  name                          = "${var.name_prefix}-${var.wenv}-${var.service_name}-tg"
+  name                          = "${var.name_prefix}-${var.zenv}-${var.service_name}-tg"
   port                          = var.service_port
   protocol                      = "HTTP"
   vpc_id                        = var.vpc_id
@@ -186,7 +186,7 @@ resource aws_lb_listener main {
 #    LogDNA subsciprion
 # ---------------------------------------------------
 resource aws_cloudwatch_log_subscription_filter lambda_logfilter {
-  name            = "${var.name_prefix}-${var.wenv}-${var.service_name}-filter"
+  name            = "${var.name_prefix}-${var.zenv}-${var.service_name}-filter"
   log_group_name  = "${var.name_prefix}/fargate/${var.cluster_name}/${var.service_name}/"
   filter_pattern  = ""
   destination_arn = var.logdna_lambda_logs_arn
