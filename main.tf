@@ -12,7 +12,7 @@ resource aws_cloudwatch_log_group ecs_group {
 #    ECS Service
 # ---------------------------------------------------
 resource aws_ecs_service main {
-  name                                = "${var.name_prefix}-${var.wznv}-${var.service_name}"
+  name                                = "${var.name_prefix}-${var.zenv}-${var.service_name}"
   cluster                             = var.cluster_name
   propagate_tags                      = "SERVICE"
   deployment_maximum_percent          = 200
