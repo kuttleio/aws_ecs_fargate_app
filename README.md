@@ -1,7 +1,6 @@
-# zbs-aws-ecs-fargate-app
-Creates ECS Fargate service:
-- With Public LB
-- Private with Service Discovery
+## Requirements
+
+No requirements.
 
 ## Providers
 
@@ -28,7 +27,6 @@ Creates ECS Fargate service:
 | [aws_service_discovery_service.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/service_discovery_service) | resource |
 | [aws_acm_certificate.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/acm_certificate) | data source |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
-| [aws_lb.passed_on](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_route53_zone.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
 
@@ -37,7 +35,8 @@ Creates ECS Fargate service:
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_additional_containers"></a> [additional\_containers](#input\_additional\_containers) | Additional containers definition | `list` | `[]` | no |
-| <a name="input_aws_lb_certificate_arn"></a> [aws\_lb\_certificate\_arn](#input\_aws\_lb\_certificate\_arn) | n/a | `any` | n/a | yes |
+| <a name="input_aws_lb_arn"></a> [aws\_lb\_arn](#input\_aws\_lb\_arn) | n/a | `string` | `""` | no |
+| <a name="input_aws_lb_certificate_arn"></a> [aws\_lb\_certificate\_arn](#input\_aws\_lb\_certificate\_arn) | Certificate ARN. Used only if public != true | `string` | `""` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | ECS Cluster name | `string` | `"fargate"` | no |
 | <a name="input_command"></a> [command](#input\_command) | Commands to run on launch | `list(string)` | `null` | no |
 | <a name="input_container_cpu"></a> [container\_cpu](#input\_container\_cpu) | Container vCPU. 256 = 0.25 vCPU \| 1024 = 1.0 vCPU \| 4096 = 4.0 vCPU (max) | `number` | `256` | no |
@@ -52,6 +51,7 @@ Creates ECS Fargate service:
 | <a name="input_environment"></a> [environment](#input\_environment) | List of Environment Variables | <pre>list(object({<br>    name  = any<br>    value = any<br>  }))</pre> | `[]` | no |
 | <a name="input_external_port"></a> [external\_port](#input\_external\_port) | You do not need to specify it | `number` | `443` | no |
 | <a name="input_health_check_grace_period_seconds"></a> [health\_check\_grace\_period\_seconds](#input\_health\_check\_grace\_period\_seconds) | Set 300 if your container needs to build / initialize something on launch | `number` | `null` | no |
+| <a name="input_healthcheck_path"></a> [healthcheck\_path](#input\_healthcheck\_path) | Path for healthchecks (only for public services) | `string` | `"/health"` | no |
 | <a name="input_image_name"></a> [image\_name](#input\_image\_name) | n/a | `string` | `"nginx"` | no |
 | <a name="input_image_version"></a> [image\_version](#input\_image\_version) | n/a | `string` | `"latest"` | no |
 | <a name="input_launch_type"></a> [launch\_type](#input\_launch\_type) | n/a | `string` | `"FARGATE"` | no |
@@ -75,7 +75,7 @@ Creates ECS Fargate service:
 | <a name="input_task_role_arn"></a> [task\_role\_arn](#input\_task\_role\_arn) | Task Role ARN | `string` | `null` | no |
 | <a name="input_volumes"></a> [volumes](#input\_volumes) | Task volume definitions as list of configuration objects | <pre>list(object({<br>    name = string<br>    efs_volume_configuration = list(object({<br>      file_system_id = string<br>      root_directory = string<br>    }))<br>  }))</pre> | `[]` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | n/a | `any` | n/a | yes |
-| <a name="input_wenv"></a> [wenv](#input\_wenv) | n/a | `string` | `"fargate"` | no |
+| <a name="input_zenv"></a> [zenv](#input\_zenv) | n/a | `string` | `"fargate"` | no |
 
 ## Outputs
 
