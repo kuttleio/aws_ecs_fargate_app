@@ -5,8 +5,13 @@ variable domain_name {}
 variable ecr_region {}
 variable ecr_account_id {}
 variable security_groups {}
-variable aws_lb_certificate_arn {}
 variable logdna_lambda_logs_arn {}
+
+variable aws_lb_certificate_arn {
+  type        = string
+  default     = ""
+  description = "Certificate ARN. Used only if public != true"
+}
 
 variable service_discovery_id {
   type    = string
