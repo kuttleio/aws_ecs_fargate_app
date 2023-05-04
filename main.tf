@@ -180,15 +180,3 @@ resource aws_lb_listener main {
     target_group_arn = aws_lb_target_group.main[0].arn
   }
 }
-
-# ---------------------------------------------------
-#    LogDNA subsciprion
-# ---------------------------------------------------
-resource aws_cloudwatch_log_subscription_filter lambda_logfilter {
-  depends_on      = [aws_cloudwatch_log_group.ecs_group]
-  name            = "${var.name_prefix}-${var.zenv}-${var.service_name}-filter"
-  log_group_name  = "${var.name_prefix}/fargate/${var.cluster_name}/${var.service_name}/"
-  filter_pattern  = ""
-  destination_arn = var.logdna_lambda_logs_arn
-  distribution    = "ByLogStream"
-}
