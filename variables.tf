@@ -7,6 +7,12 @@ variable ecr_account_id {}
 variable security_groups {}
 variable logdna_lambda_logs_arn {}
 
+variable run_on_spots {
+  type        = bool
+  default     = false
+  description = "Set true to run 100% on FARGATE_SPOT"
+}
+
 variable aws_lb_certificate_arn {
   type        = string
   default     = ""
@@ -123,6 +129,11 @@ variable health_check_grace_period_seconds {
   default     = null
   description = "Set 300 if your container needs to build / initialize something on launch"
 }
+variable health_check_path {
+  type        = string
+  default     = "/health"
+  description = "Health checks path"
+}
 variable additional_containers {
   description = "Additional containers definition"
   default     = []
@@ -139,11 +150,6 @@ variable retention_in_days {
   type        = number
   default     = 7
   description = "Amount of days to store service logs"
-}
-variable healthcheck_path {
-  type        = string
-  default     = "/health"
-  description = "Path for healthchecks (only for public services)"
 }
 
 variable mount_points {
