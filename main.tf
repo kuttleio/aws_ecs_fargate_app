@@ -7,7 +7,6 @@ resource aws_cloudwatch_log_group ecs_group {
   retention_in_days = var.retention_in_days
 }
 
-
 # ---------------------------------------------------
 #    ECS Service
 # ---------------------------------------------------
@@ -25,13 +24,13 @@ resource aws_ecs_service main {
   capacity_provider_strategy {
     capacity_provider = "FARGATE"
     weight            = 1
-    base              = 1
+    base              = var.run_on_spots == true ? 0 : 1
   }
   
   capacity_provider_strategy {
     capacity_provider = "FARGATE_SPOT"
     weight            = 1
-    base              = 0
+    base              = var.run_on_spots == true ? 1 : 0
   }
 
   network_configuration {
@@ -93,6 +92,7 @@ module main_container_definition {
   container_memory              = var.container_memory
   container_memory_reservation  = var.container_memory
   secrets                       = var.secrets
+  command                       = var.command
   
   port_mappings = [
     {
@@ -145,7 +145,6 @@ resource aws_ecs_task_definition main {
   task_role_arn             = var.task_role_arn
 }
 
-
 # ---------------------------------------------------
 #    Internal Load Balancer
 # ---------------------------------------------------
@@ -163,7 +162,7 @@ resource aws_lb_target_group main {
     unhealthy_threshold = 10
     timeout             = 5
     interval            = 10
-    path                = var.healthcheck_path
+    path                = var.health_check_path
     port                = var.service_port
   }
 }
@@ -186,6 +185,7 @@ resource aws_lb_listener main {
 #    LogDNA subsciprion
 # ---------------------------------------------------
 resource aws_cloudwatch_log_subscription_filter lambda_logfilter {
+  depends_on      = [aws_cloudwatch_log_group.ecs_group]
   name            = "${var.name_prefix}-${var.zenv}-${var.service_name}-filter"
   log_group_name  = "${var.name_prefix}/fargate/${var.cluster_name}/${var.service_name}/"
   filter_pattern  = ""
