@@ -9,7 +9,7 @@ variable logdna_lambda_logs_arn {}
 
 variable run_on_spots {
   type        = bool
-  default     = false
+  default     = true
   description = "Set true to run 100% on FARGATE_SPOT"
 }
 
