@@ -170,6 +170,6 @@ No requirements.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_service_name"></a> [service\_name](#output\_service\_name) | n/a |
-| <a name="output_service_port"></a> [service\_port](#output\_service\_port) | n/a |
+| <a name="output_service_name"></a> [service\_name](#output\_service\_name) | Service name |
+| <a name="output_service_port"></a> [service\_port](#output\_service\_port) | Service port |
 <!-- END_TF_DOCS -->
