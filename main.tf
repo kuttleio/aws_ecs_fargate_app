@@ -11,7 +11,7 @@ resource aws_cloudwatch_log_group ecs_group {
 #    Cloudwatch subsciprion for pushing logs
 # ---------------------------------------------------
 resource aws_cloudwatch_log_subscription_filter lambda_logfilter {
-  count           = var.logs_destination_arn == "" ? 0 : 1
+#  count           = var.logs_destination_arn == "" ? 0 : 1
   depends_on      = [aws_cloudwatch_log_group.ecs_group]
   name            = "${var.name_prefix}-${var.zenv}-${var.service_name}-filter"
   log_group_name  = "${var.name_prefix}/fargate/${var.cluster_name}/${var.service_name}/"
