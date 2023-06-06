@@ -132,16 +132,47 @@ module main_container_definition {
   ])
 
   log_configuration = {
+    logDriver     = "awsfirelens"
+    options = {
+      "Name"               = "opensearch",
+      "Host"               = var.opensearch_endpoint
+      "Port"               = "443"
+      "Index"              = "${var.name_prefix}-index"
+      "http_user"          = var.opensearch_username
+      "http_passwd"        = var.opensearch_password
+      "suppress_type_name" = "On"
+      "tls"                = "On"
+      "tls.verify"         = "Off"
+      "logstash_format"    = "On"
+      "logstash_prefix"    = "${var.name_prefix}-index"
+    }
+  }
+}
+
+# ---------------------------------------------------
+#     Container - Firelens
+# ---------------------------------------------------
+module firelens_container_definition {
+  source  = "cloudposse/ecs-container-definition/aws"
+  version = "0.58.1"
+
+  container_name                = "firelens"
+  container_image               = var.firelens_image
+  container_memory_reservation  = 50
+  firelens_configuration        = {
+    type = "fluentbit"
+    options = {}
+  }
+  log_configuration = {
     logDriver     = "awslogs"
     secretOptions = null
-    options = {
+    options       = {
       "awslogs-group"         = aws_cloudwatch_log_group.ecs_group.name
       "awslogs-region"        = data.aws_region.current.name
       "awslogs-stream-prefix" = "ecs"
     }
   }
 }
-
 
 # ---------------------------------------------------
 #     Task Definition
@@ -154,7 +185,7 @@ resource aws_ecs_task_definition main {
   memory                    = var.task_memory > var.container_memory ? var.task_memory : var.container_memory
   network_mode              = "awsvpc"
   tags                      = merge(var.standard_tags, tomap({ Name = var.service_name }))
-  container_definitions     = module.main_container_definition.json_map_encoded_list
+  container_definitions     = "[${module.main_container_definition.sensitive_json_map_encoded},${module.firelens_container_definition.sensitive_json_map_encoded}]"
   task_role_arn             = var.task_role_arn
 }
 
