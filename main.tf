@@ -14,7 +14,7 @@ resource aws_cloudwatch_log_subscription_filter lambda_logfilter {
   name            = "${var.name_prefix}-${var.zenv}-${var.service_name}-filter"
   log_group_name  = "${var.name_prefix}/fargate/${var.cluster_name}/${var.service_name}/"
   filter_pattern  = ""
-  destination_arn = var.logs_destination_arn[count.index]
+  destination_arn = var.logs_destination_arn
   distribution    = "ByLogStream"
 }
 
