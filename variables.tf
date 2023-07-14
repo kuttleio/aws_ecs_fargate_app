@@ -97,7 +97,7 @@ variable task_cpu {
 
 variable task_memory {
   type        = number
-  default     = 512
+  default     = 1024
   description = "Task Memory (RAM). 512 = 512 Mb | 1024 = 1024 Mb = 1.0 Gb | 8192 = 8192 Mb = 8.0 Gb (max)"
 }
 
@@ -235,4 +235,28 @@ variable secrets {
   }))
   description = "List of Secrets"
   default     = []
+}
+
+variable "opensearch_username" {
+  type = string
+  default = ""
+  description = "login for opensearch" 
+}
+
+variable "opensearch_password" {
+  type = string
+  default = ""
+  description = "Password for opensearch"
+}
+
+variable "opensearch_endpoint" {
+  type = string
+  default = ""
+  description = "Opensearch endpoint"  
+}
+
+variable "firelens_image" {
+  type = string
+  default = "906394416424.dkr.ecr.eu-central-1.amazonaws.com/aws-for-fluent-bit:stable"
+  description = "Full ECR Url. Example: 000000000000.dkr.ecr.us-west-2.amazonaws.com/repo_name:image_version"
 }
