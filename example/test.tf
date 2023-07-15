@@ -12,8 +12,6 @@ locals {
       service_image          = "${var.ecr_repository_url}:frontend"
       container_cpu          = var.frontend_container_cpu
       container_memory       = var.frontend_container_memory
-      aws_lb_arn             = var.frontend_aws_lb_arn
-      aws_lb_certificate_arn = var.aws_lb_certificate_arn
       environment            = setunion(var.envvars, local.added_env)
     }
     "backend" = {
@@ -21,8 +19,6 @@ locals {
       service_image          = "${var.ecr_repository_url}:backend"
       container_cpu          = var.backend_container_cpu
       container_memory       = var.backend_container_memory
-      aws_lb_arn             = var.backend_aws_lb_arn
-      aws_lb_certificate_arn = var.aws_lb_certificate_arn
       environment = setunion(var.envvars, local.added_env, [
         {
           name  = "UPDATE_STATUSES_CRON"
@@ -39,7 +35,6 @@ locals {
       service_image        = "${var.ecr_repository_url}:runner"
       container_cpu        = var.runner_container_cpu
       container_memory     = var.runner_container_memory
-      service_discovery_id = var.service_discovery_id
       environment          = setunion(var.envvars, local.added_env)
     }
   }
@@ -51,7 +46,7 @@ locals {
 }
 
 locals {
-  default_values = {
+  default_general_settings = {
     name_prefix          = var.name_prefix
     standard_tags        = var.standard_tags
     cluster_name         = var.cluster_name
@@ -66,8 +61,26 @@ locals {
     task_role_arn        = var.task_role_arn
     secrets              = var.secrets
   }
+  default_service_settings = {
+    "frontend" = {
+      aws_lb_arn             = var.frontend_aws_lb_arn
+      aws_lb_certificate_arn = var.aws_lb_certificate_arn
+    }
+    "backend" = {
+      aws_lb_arn             = var.backend_aws_lb_arn
+      aws_lb_certificate_arn = var.aws_lb_certificate_arn
+    }
+    "runner" = {
+      aws_lb_arn             = ""
+      aws_lb_certificate_arn = ""
+      service_discovery_id = var.service_discovery_id
+    }
+  }
+  merged_services = {
+    for service_name, service in local.services_input : service_name => merge(service, local.default_service_settings[service_name])
+  }
   services = {
-    for service_name, service in local.services_input : service_name => merge(merge(local.default_values, service), {
+    for service_name, service in local.merged_services : service_name => merge(merge(local.default_general_settings, service), {
       service_name = service_name
     })
   }
