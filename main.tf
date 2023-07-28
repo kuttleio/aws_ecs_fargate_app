@@ -7,11 +7,16 @@ resource aws_cloudwatch_log_group ecs_group {
   retention_in_days = var.retention_in_days
 }
 
+resource time_sleep wait_30_seconds {
+  depends_on = [aws_cloudwatch_log_group.ecs_group]
+  create_duration = "30s"
+}
+
 # ---------------------------------------------------
 #    Cloudwatch subsciprion for pushing logs
 # ---------------------------------------------------
 resource aws_cloudwatch_log_subscription_filter lambda_logfilter {
-  depends_on      = [aws_cloudwatch_log_group.ecs_group]
+  depends_on      = [aws_cloudwatch_log_group.ecs_group, time_sleep.wait_30_seconds]
   name            = "${var.name_prefix}-${var.zenv}-${var.service_name}-filter"
   log_group_name  = "${var.name_prefix}/fargate/${var.cluster_name}/${var.service_name}/"
   filter_pattern  = ""
