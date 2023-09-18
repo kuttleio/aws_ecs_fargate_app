@@ -160,6 +160,10 @@ resource "aws_ecs_task_definition" "main" {
   tags                     = merge(var.standard_tags, tomap({ Name = var.service_name }))
   container_definitions    = module.main_container_definition.json_map_encoded_list
   task_role_arn            = var.task_role_arn
+  
+  ephemeral_storage {
+    size_in_gib = var.disk_size_in_gib
+  }
 }
 
 # ---------------------------------------------------
