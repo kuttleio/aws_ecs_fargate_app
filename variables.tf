@@ -236,3 +236,9 @@ variable "secrets" {
   description = "List of Secrets"
   default     = []
 }
+
+variable "disk_size_in_gib" {
+  type = number
+  description = "ECS Task ephemeral storage (in Gigs)"
+  default = 20
+}
