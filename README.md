@@ -134,6 +134,7 @@ No requirements.
 | <a name="input_container_cpu_low_threshold"></a> [container\_cpu\_low\_threshold](#input\_container\_cpu\_low\_threshold) | Autoscaling: Low CPU Threshold | `number` | `60` | no |
 | <a name="input_container_memory"></a> [container\_memory](#input\_container\_memory) | Container Memory (RAM). 512 = 512 Mb \| 1024 = 1024 Mb = 1.0 Gb \| 8192 = 8192 Mb = 8.0 Gb (max) | `number` | `512` | no |
 | <a name="input_desired_count"></a> [desired\_count](#input\_desired\_count) | Desired task count | `number` | `1` | no |
+| <a name="input_disk_size_in_gib"></a> [disk\_size\_in\_gib](#input\_disk\_size\_in\_gib) | ECS Task ephemeral storage (in Gigs) | `number` | `20` | no |
 | <a name="input_domain_name"></a> [domain\_name](#input\_domain\_name) | n/a | `any` | n/a | yes |
 | <a name="input_ecr_account_id"></a> [ecr\_account\_id](#input\_ecr\_account\_id) | n/a | `any` | n/a | yes |
 | <a name="input_ecr_region"></a> [ecr\_region](#input\_ecr\_region) | n/a | `any` | n/a | yes |
