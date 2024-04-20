@@ -101,7 +101,7 @@ resource aws_service_discovery_service main {
 # ---------------------------------------------------
 module main_container_definition {
   source  = "cloudposse/ecs-container-definition/aws"
-  version = "0.58.1"
+  version = "0.61.1"
 
   container_name               = var.service_name
   container_image              = var.service_image
