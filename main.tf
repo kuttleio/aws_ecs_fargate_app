@@ -133,7 +133,8 @@ module main_container_definition {
         name  = "SERVICE_PORT"
         value = var.service_port
       }
-  ])
+    ]
+  )
 
   log_configuration = {
     logDriver     = "awslogs"
@@ -193,7 +194,7 @@ resource aws_lb_listener main {
   load_balancer_arn = var.aws_lb_arn
   port              = var.external_port
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-Ext-2018-06"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   certificate_arn   = var.aws_lb_certificate_arn
 
   default_action {
