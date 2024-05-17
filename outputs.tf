@@ -4,6 +4,6 @@ output service_port {
 }
 
 output service_name {
-  value       = var.service_name
+  value       = aws_ecs_service.main.name
   description = "Service name"
 }
