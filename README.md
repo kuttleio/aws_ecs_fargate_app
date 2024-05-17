@@ -101,7 +101,7 @@ No requirements.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_main_container_definition"></a> [main\_container\_definition](#module\_main\_container\_definition) | cloudposse/ecs-container-definition/aws | 0.58.1 |
+| <a name="module_main_container_definition"></a> [main\_container\_definition](#module\_main\_container\_definition) | cloudposse/ecs-container-definition/aws | 0.61.1 |
 
 ## Resources
 
@@ -126,7 +126,7 @@ No requirements.
 |------|-------------|------|---------|:--------:|
 | <a name="input_additional_containers"></a> [additional\_containers](#input\_additional\_containers) | Additional containers definition | `list(string)` | `[]` | no |
 | <a name="input_aws_lb_arn"></a> [aws\_lb\_arn](#input\_aws\_lb\_arn) | Load Balancer ARN (if $public = true) | `string` | `""` | no |
-| <a name="input_aws_lb_certificate_arn"></a> [aws\_lb\_certificate\_arn](#input\_aws\_lb\_certificate\_arn) | Certificate ARN. Used only if public != true | `string` | `""` | no |
+| <a name="input_aws_lb_certificate_arn"></a> [aws\_lb\_certificate\_arn](#input\_aws\_lb\_certificate\_arn) | Certificate ARN (if $public != true) | `string` | `""` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | ECS Cluster name | `string` | `"fargate"` | no |
 | <a name="input_command"></a> [command](#input\_command) | Commands to run on launch | `list(string)` | `null` | no |
 | <a name="input_container_cpu"></a> [container\_cpu](#input\_container\_cpu) | Container vCPU. 256 = 0.25 vCPU \| 1024 = 1.0 vCPU \| 4096 = 4.0 vCPU (max) | `number` | `256` | no |
@@ -134,13 +134,13 @@ No requirements.
 | <a name="input_container_cpu_low_threshold"></a> [container\_cpu\_low\_threshold](#input\_container\_cpu\_low\_threshold) | Autoscaling: Low CPU Threshold | `number` | `60` | no |
 | <a name="input_container_memory"></a> [container\_memory](#input\_container\_memory) | Container Memory (RAM). 512 = 512 Mb \| 1024 = 1024 Mb = 1.0 Gb \| 8192 = 8192 Mb = 8.0 Gb (max) | `number` | `512` | no |
 | <a name="input_desired_count"></a> [desired\_count](#input\_desired\_count) | Desired task count | `number` | `1` | no |
-| <a name="input_disk_size_in_gib"></a> [disk\_size\_in\_gib](#input\_disk\_size\_in\_gib) | ECS Task ephemeral storage (in Gigs) | `number` | `20` | no |
+| <a name="input_disk_size_in_gib"></a> [disk\_size\_in\_gib](#input\_disk\_size\_in\_gib) | ECS Task ephemeral storage (in Gigs) | `number` | `21` | no |
 | <a name="input_domain_name"></a> [domain\_name](#input\_domain\_name) | n/a | `any` | n/a | yes |
 | <a name="input_ecr_account_id"></a> [ecr\_account\_id](#input\_ecr\_account\_id) | n/a | `any` | n/a | yes |
 | <a name="input_ecr_region"></a> [ecr\_region](#input\_ecr\_region) | n/a | `any` | n/a | yes |
 | <a name="input_entrypoint"></a> [entrypoint](#input\_entrypoint) | Just entrypoint | `list(string)` | `null` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | List of Environment Variables | <pre>list(object({<br>    name  = any<br>    value = any<br>  }))</pre> | `[]` | no |
-| <a name="input_external_port"></a> [external\_port](#input\_external\_port) | No need to set it up. Used for public services (when $public = true) | `number` | `443` | no |
+| <a name="input_external_port"></a> [external\_port](#input\_external\_port) | No need to set it up. Used for public services (if $public = true) | `number` | `443` | no |
 | <a name="input_health_check_grace_period_seconds"></a> [health\_check\_grace\_period\_seconds](#input\_health\_check\_grace\_period\_seconds) | Set 300 if your container needs to be initialized on launch | `number` | `null` | no |
 | <a name="input_health_check_path"></a> [health\_check\_path](#input\_health\_check\_path) | Health checks path. Best to use the default one | `string` | `"/health"` | no |
 | <a name="input_image_name"></a> [image\_name](#input\_image\_name) | Image name | `string` | `"nginx"` | no |
