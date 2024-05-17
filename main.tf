@@ -13,7 +13,7 @@ resource time_sleep wait_30_seconds {
 }
 
 # ---------------------------------------------------
-#    Cloudwatch subsciprion for pushing logs
+#    Cloudwatch subscription for pushing logs
 # ---------------------------------------------------
 resource aws_cloudwatch_log_subscription_filter lambda_logfilter {
   depends_on      = [aws_cloudwatch_log_group.ecs_group, time_sleep.wait_30_seconds]
@@ -64,20 +64,15 @@ resource aws_ecs_service main {
     }
   }
 
-  dynamic "service_registries" {
-    for_each = var.public ? [] : [1]
-    content {
-      registry_arn = aws_service_discovery_service.main[0].arn
-    }
+  service_registries {
+    registry_arn = aws_service_discovery_service.main.arn
   }
 }
-
 
 # ---------------------------------------------------
 #     Service Discovery
 # ---------------------------------------------------
 resource aws_service_discovery_service main {
-  count = var.public == true ? 0 : 1
   name  = "${var.name_prefix}-${var.zenv}-${var.service_name}"
   tags  = merge(var.standard_tags, tomap({ Name = var.service_name }))
 
@@ -146,7 +141,6 @@ module main_container_definition {
     }
   }
 }
-
 
 # ---------------------------------------------------
 #     Task Definition
