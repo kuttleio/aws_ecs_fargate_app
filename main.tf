@@ -67,6 +67,10 @@ resource "aws_ecs_service" "main" {
   service_registries {
     registry_arn = aws_service_discovery_service.main.arn
   }
+
+  lifecycle {
+    ignore_changes = [desired_count]
+  }
 }
 
 # ---------------------------------------------------
