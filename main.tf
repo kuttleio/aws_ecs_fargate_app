@@ -1,13 +1,13 @@
 # ---------------------------------------------------
 #    CloudWatch Log Groups
 # ---------------------------------------------------
-resource aws_cloudwatch_log_group ecs_group {
+resource "aws_cloudwatch_log_group" "ecs_group" {
   name              = "${var.name_prefix}/fargate/${var.cluster_name}/${var.service_name}/"
   tags              = var.standard_tags
   retention_in_days = var.retention_in_days
 }
 
-resource time_sleep wait_30_seconds {
+resource "time_sleep" "wait_30_seconds" {
   depends_on      = [aws_cloudwatch_log_group.ecs_group]
   create_duration = "30s"
 }
@@ -15,7 +15,7 @@ resource time_sleep wait_30_seconds {
 # ---------------------------------------------------
 #    Cloudwatch subscription for pushing logs
 # ---------------------------------------------------
-resource aws_cloudwatch_log_subscription_filter lambda_logfilter {
+resource "aws_cloudwatch_log_subscription_filter" "lambda_logfilter" {
   depends_on      = [aws_cloudwatch_log_group.ecs_group, time_sleep.wait_30_seconds]
   name            = "${var.name_prefix}-${var.zenv}-${var.service_name}-filter"
   log_group_name  = "${var.name_prefix}/fargate/${var.cluster_name}/${var.service_name}/"
@@ -27,7 +27,7 @@ resource aws_cloudwatch_log_subscription_filter lambda_logfilter {
 # ---------------------------------------------------
 #    ECS Service
 # ---------------------------------------------------
-resource aws_ecs_service main {
+resource "aws_ecs_service" "main" {
   name                               = "${var.name_prefix}-${var.zenv}-${var.service_name}"
   cluster                            = var.cluster_name
   propagate_tags                     = "SERVICE"
@@ -72,9 +72,9 @@ resource aws_ecs_service main {
 # ---------------------------------------------------
 #     Service Discovery
 # ---------------------------------------------------
-resource aws_service_discovery_service main {
-  name  = "${var.name_prefix}-${var.zenv}-${var.service_name}"
-  tags  = merge(var.standard_tags, tomap({ Name = var.service_name }))
+resource "aws_service_discovery_service" "main" {
+  name = "${var.name_prefix}-${var.zenv}-${var.service_name}"
+  tags = merge(var.standard_tags, tomap({ Name = var.service_name }))
 
   dns_config {
     namespace_id   = var.service_discovery_id
@@ -94,7 +94,7 @@ resource aws_service_discovery_service main {
 # ---------------------------------------------------
 #     Container - Main
 # ---------------------------------------------------
-module main_container_definition {
+module "main_container_definition" {
   source  = "cloudposse/ecs-container-definition/aws"
   version = "0.61.1"
 
@@ -138,6 +138,8 @@ module main_container_definition {
       "awslogs-group"         = aws_cloudwatch_log_group.ecs_group.name
       "awslogs-region"        = data.aws_region.current.name
       "awslogs-stream-prefix" = "ecs"
+      "mode"                  = "non-blocking"
+      "max-buffer-size"       = "25m"
     }
   }
 }
@@ -145,7 +147,7 @@ module main_container_definition {
 # ---------------------------------------------------
 #     Task Definition
 # ---------------------------------------------------
-resource aws_ecs_task_definition main {
+resource "aws_ecs_task_definition" "main" {
   family                   = "${var.name_prefix}-${var.zenv}-${var.service_name}"
   requires_compatibilities = [var.launch_type]
   execution_role_arn       = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/ecsTaskExecutionRole"
@@ -155,7 +157,7 @@ resource aws_ecs_task_definition main {
   tags                     = merge(var.standard_tags, tomap({ Name = var.service_name }))
   container_definitions    = module.main_container_definition.json_map_encoded_list
   task_role_arn            = var.task_role_arn
-  
+
   ephemeral_storage {
     size_in_gib = var.disk_size_in_gib
   }
@@ -164,7 +166,7 @@ resource aws_ecs_task_definition main {
 # ---------------------------------------------------
 #    Internal Load Balancer
 # ---------------------------------------------------
-resource aws_lb_target_group main {
+resource "aws_lb_target_group" "main" {
   count                         = var.public == true ? 1 : 0
   name                          = "${var.name_prefix}-${var.zenv}-${var.service_name}-tg"
   port                          = var.service_port
@@ -183,7 +185,7 @@ resource aws_lb_target_group main {
   }
 }
 
-resource aws_lb_listener main {
+resource "aws_lb_listener" "main" {
   count             = var.public == true ? 1 : 0
   load_balancer_arn = var.aws_lb_arn
   port              = var.external_port
