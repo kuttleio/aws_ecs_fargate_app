@@ -7,16 +7,16 @@ resource aws_cloudwatch_log_group ecs_group {
   retention_in_days = var.retention_in_days
 }
 
-resource time_sleep wait_30_seconds {
+resource time_sleep wait {
   depends_on      = [aws_cloudwatch_log_group.ecs_group]
-  create_duration = "30s"
+  create_duration = "10s"
 }
 
 # ---------------------------------------------------
 #    Cloudwatch subscription for pushing logs
 # ---------------------------------------------------
 resource aws_cloudwatch_log_subscription_filter lambda_logfilter {
-  depends_on      = [aws_cloudwatch_log_group.ecs_group, time_sleep.wait_30_seconds]
+  depends_on      = [aws_cloudwatch_log_group.ecs_group, time_sleep.wait]
   name            = "${var.name_prefix}-${var.zenv}-${var.service_name}-filter"
   log_group_name  = "${var.name_prefix}/fargate/${var.cluster_name}/${var.service_name}/"
   filter_pattern  = ""
@@ -58,7 +58,7 @@ resource aws_ecs_service main {
   dynamic "load_balancer" {
     for_each = var.public ? [1] : []
     content {
-      target_group_arn = aws_lb_target_group.main[0].arn
+      target_group_arn = var.target_group_arn
       container_name   = var.service_name
       container_port   = var.service_port
     }
@@ -160,41 +160,5 @@ resource aws_ecs_task_definition main {
 
   ephemeral_storage {
     size_in_gib = var.disk_size_in_gib
-  }
-}
-
-# ---------------------------------------------------
-#    Internal Load Balancer
-# ---------------------------------------------------
-resource aws_lb_target_group main {
-  count                         = var.public == true ? 1 : 0
-  name                          = "${var.name_prefix}-${var.zenv}-${var.service_name}-tg"
-  port                          = var.service_port
-  protocol                      = "HTTP"
-  vpc_id                        = var.vpc_id
-  load_balancing_algorithm_type = "round_robin"
-  target_type                   = "ip"
-
-  health_check {
-    healthy_threshold   = 3
-    unhealthy_threshold = 10
-    timeout             = 5
-    interval            = 10
-    path                = var.health_check_path
-    port                = var.service_port
-  }
-}
-
-resource aws_lb_listener main {
-  count             = var.public == true ? 1 : 0
-  load_balancer_arn = var.aws_lb_arn
-  port              = var.external_port
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  certificate_arn   = var.aws_lb_certificate_arn
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.main[0].arn
   }
 }

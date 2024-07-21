@@ -35,6 +35,11 @@ variable aws_lb_arn {
   default     = ""
   description = "Load Balancer ARN (if $public = true)"
 }
+variable target_group_arn {
+  type        = string
+  default     = ""
+  description = "LB Target group ARN (if $public = true)"
+}
 
 variable image_name {
   type        = string
