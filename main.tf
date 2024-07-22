@@ -164,7 +164,7 @@ resource aws_ecs_task_definition main {
 }
 
 # ---------------------------------------------------
-#    Autoscaling (Jobs)
+#    CloudWatch Metric Alarms for SQS
 # ---------------------------------------------------
 resource aws_cloudwatch_metric_alarm sqs_messages_visible {
   alarm_name          = "${var.name_prefix}-${var.zenv}-${var.service_name}-SQS-Messages-Visible"
@@ -181,6 +181,9 @@ resource aws_cloudwatch_metric_alarm sqs_messages_visible {
   }
 }
 
+# ---------------------------------------------------
+#    App Autoscaling Target
+# ---------------------------------------------------
 resource aws_appautoscaling_target ecs_service {
   max_capacity       = var.max_task_count
   min_capacity       = var.min_task_count
@@ -189,6 +192,9 @@ resource aws_appautoscaling_target ecs_service {
   service_namespace  = "ecs"
 }
 
+# ---------------------------------------------------
+#    App Autoscaling Policy: Scale Out
+# ---------------------------------------------------
 resource aws_appautoscaling_policy scale_out {
   name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-out"
   policy_type        = "StepScaling"
@@ -208,6 +214,9 @@ resource aws_appautoscaling_policy scale_out {
   }
 }
 
+# ---------------------------------------------------
+#    App Autoscaling Policy: Scale In
+# ---------------------------------------------------
 resource aws_appautoscaling_policy scale_in {
   name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-in"
   policy_type        = "StepScaling"
@@ -227,6 +236,9 @@ resource aws_appautoscaling_policy scale_in {
   }
 }
 
+# ---------------------------------------------------
+#    CloudWatch Alarms: Scale Out
+# ---------------------------------------------------
 resource aws_cloudwatch_metric_alarm scale_out_alarm {
   alarm_name          = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-out-alarm"
   comparison_operator = "GreaterThanThreshold"
@@ -244,6 +256,9 @@ resource aws_cloudwatch_metric_alarm scale_out_alarm {
   alarm_actions = [aws_appautoscaling_policy.scale_out.arn]
 }
 
+# ---------------------------------------------------
+#    CloudWatch Alarms: Scale In
+# ---------------------------------------------------
 resource aws_cloudwatch_metric_alarm scale_in_alarm {
   alarm_name          = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-in-alarm"
   comparison_operator = "LessThanThreshold"
