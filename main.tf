@@ -167,6 +167,7 @@ resource aws_ecs_task_definition main {
 #    CloudWatch Metric Alarms for SQS
 # ---------------------------------------------------
 resource aws_cloudwatch_metric_alarm sqs_messages_visible {
+  count               = var.sqs_queue_name != "" ? 1 : 0
   alarm_name          = "${var.name_prefix}-${var.zenv}-${var.service_name}-SQS-Messages-Visible"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
@@ -185,6 +186,7 @@ resource aws_cloudwatch_metric_alarm sqs_messages_visible {
 #    App Autoscaling Target
 # ---------------------------------------------------
 resource aws_appautoscaling_target ecs_service {
+  count              = var.sqs_queue_name != "" ? 1 : 0
   max_capacity       = var.max_task_count
   min_capacity       = var.min_task_count
   resource_id        = "service/${var.cluster_name}/${aws_ecs_service.main.name}"
@@ -196,6 +198,7 @@ resource aws_appautoscaling_target ecs_service {
 #    App Autoscaling Policy: Scale Out
 # ---------------------------------------------------
 resource aws_appautoscaling_policy scale_out {
+  count              = var.sqs_queue_name != "" ? 1 : 0
   name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-out"
   policy_type        = "StepScaling"
   resource_id        = aws_appautoscaling_target.ecs_service.resource_id
@@ -218,6 +221,7 @@ resource aws_appautoscaling_policy scale_out {
 #    App Autoscaling Policy: Scale In
 # ---------------------------------------------------
 resource aws_appautoscaling_policy scale_in {
+  count              = var.sqs_queue_name != "" ? 1 : 0
   name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-in"
   policy_type        = "StepScaling"
   resource_id        = aws_appautoscaling_target.ecs_service.resource_id
@@ -240,6 +244,7 @@ resource aws_appautoscaling_policy scale_in {
 #    CloudWatch Alarms: Scale Out
 # ---------------------------------------------------
 resource aws_cloudwatch_metric_alarm scale_out_alarm {
+  count               = var.sqs_queue_name != "" ? 1 : 0
   alarm_name          = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-out-alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 1
@@ -260,6 +265,7 @@ resource aws_cloudwatch_metric_alarm scale_out_alarm {
 #    CloudWatch Alarms: Scale In
 # ---------------------------------------------------
 resource aws_cloudwatch_metric_alarm scale_in_alarm {
+  count               = var.sqs_queue_name != "" ? 1 : 0
   alarm_name          = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-in-alarm"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = 1

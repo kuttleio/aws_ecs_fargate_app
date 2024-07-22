@@ -281,4 +281,5 @@ variable target_sqs_messages {
 variable sqs_queue_name {
   description = "SQS Q name for scaling"
   type        = string
+  default     = ""
 }
