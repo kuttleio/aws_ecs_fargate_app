@@ -175,12 +175,9 @@ locals {
     }
   ]
   
-  final_step = [
-    for step in local.scale_steps_temp :
-    step.metric_upper_bound == null ? step : null
-  ]
+  has_final_step = length([for step in local.scale_steps_temp : step.metric_upper_bound == null ? 1 : 0]) > 0
   
-  scale_steps = length(compact(local.final_step)) > 0 ? local.scale_steps_temp : concat(local.scale_steps_temp, [{
+  scale_steps = local.has_final_step ? local.scale_steps_temp : concat(local.scale_steps_temp, [{
     adjustment            = ceil(var.max_task_count / var.target_sqs_messages)
     metric_lower_bound    = ceil(var.max_task_count / var.target_sqs_messages) * var.target_sqs_messages
     metric_upper_bound    = null
