@@ -171,7 +171,7 @@ locals {
     for i in range(0, ceil(var.max_task_count / var.target_sqs_messages)) : {
       adjustment            = i + 1
       metric_lower_bound    = i * var.target_sqs_messages
-      metric_upper_bound    = (i + 1) * var.target_sqs_messages - 1
+      metric_upper_bound    = i < ceil(var.max_task_count / var.target_sqs_messages) - 1 ? (i + 1) * var.target_sqs_messages - 1 : null
     }
   ]
 }
@@ -193,19 +193,6 @@ resource aws_cloudwatch_metric_alarm sqs_messages_visible {
   dimensions = {
     QueueName = var.sqs_queue_name
   }
-}
-
-# ---------------------------------------------------
-#   Autoscaling settings
-# ---------------------------------------------------
-locals {
-  scale_steps = [
-    for i in range(0, ceil(var.max_task_count / var.target_sqs_messages)) : {
-      adjustment            = i + 1
-      metric_lower_bound    = i * var.target_sqs_messages
-      metric_upper_bound    = i < ceil(var.max_task_count / var.target_sqs_messages) - 1 ? (i + 1) * var.target_sqs_messages - 1 : null
-    }
-  ]
 }
 
 # ---------------------------------------------------
