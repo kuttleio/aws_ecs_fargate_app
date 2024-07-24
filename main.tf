@@ -300,7 +300,7 @@ resource aws_appautoscaling_target ecs_service_target {
   count              = var.sqs_queue_name != "" ? 1 : 0
   max_capacity       = var.max_task_count
   min_capacity       = var.min_task_count
-  resource_id        = "service/${var.cluster_name}/${var.service_name}"
+  resource_id        = "service/${var.cluster_name}/${var.name_prefix}-${var.zenv}-${var.service_name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 }
