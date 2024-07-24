@@ -196,15 +196,16 @@ resource aws_cloudwatch_metric_alarm sqs_messages_visible {
 }
 
 # ---------------------------------------------------
-#    App Autoscaling Target
+#   Autoscaling settings
 # ---------------------------------------------------
-resource aws_appautoscaling_target ecs_service {
-  count              = var.sqs_queue_name != "" ? 1 : 0
-  max_capacity       = var.max_task_count
-  min_capacity       = var.min_task_count
-  resource_id        = "service/${var.cluster_name}/${aws_ecs_service.main.name}"
-  scalable_dimension = "ecs:service:DesiredCount"
-  service_namespace  = "ecs"
+locals {
+  scale_steps = [
+    for i in range(0, ceil(var.max_task_count / var.target_sqs_messages)) : {
+      adjustment            = i + 1
+      metric_lower_bound    = i * var.target_sqs_messages
+      metric_upper_bound    = i < ceil(var.max_task_count / var.target_sqs_messages) - 1 ? (i + 1) * var.target_sqs_messages - 1 : null
+    }
+  ]
 }
 
 # ---------------------------------------------------
