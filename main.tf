@@ -214,9 +214,9 @@ resource aws_appautoscaling_policy scale_out {
   count              = var.sqs_queue_name != "" ? 1 : 0
   name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-out"
   policy_type        = "StepScaling"
-  resource_id        = aws_appautoscaling_target.ecs_service[count.index].resource_id
-  scalable_dimension = aws_appautoscaling_target.ecs_service[count.index].scalable_dimension
-  service_namespace  = aws_appautoscaling_target.ecs_service[count.index].service_namespace
+  resource_id        = aws_appautoscaling_target.ecs_service[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_service[0].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_service[0].service_namespace
 
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
@@ -241,9 +241,9 @@ resource aws_appautoscaling_policy scale_in {
   count              = var.sqs_queue_name != "" ? 1 : 0
   name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-in"
   policy_type        = "StepScaling"
-  resource_id        = aws_appautoscaling_target.ecs_service[count.index].resource_id
-  scalable_dimension = aws_appautoscaling_target.ecs_service[count.index].scalable_dimension
-  service_namespace  = aws_appautoscaling_target.ecs_service[count.index].service_namespace
+  resource_id        = aws_appautoscaling_target.ecs_service[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_service[0].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_service[0].service_namespace
 
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
