@@ -261,7 +261,7 @@ resource aws_appautoscaling_policy scale_in {
 resource aws_cloudwatch_metric_alarm scale_out_alarm {
   count               = var.sqs_queue_name != "" ? 1 : 0
   alarm_name          = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-out-alarm"
-  comparison_operator = "GreaterThanThreshold"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "ApproximateNumberOfMessagesVisible"
   namespace           = "AWS/SQS"
