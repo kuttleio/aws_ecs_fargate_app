@@ -269,7 +269,7 @@ resource aws_cloudwatch_metric_alarm scale_out_alarm {
     QueueName = var.sqs_queue_name
   }
 
-  alarm_actions = [aws_appautoscaling_policy.scale_out.arn]
+  alarm_actions = [aws_appautoscaling_policy.scale_out[count.index].arn]
 }
 
 # ---------------------------------------------------
@@ -284,13 +284,13 @@ resource aws_cloudwatch_metric_alarm scale_in_alarm {
   namespace           = "AWS/SQS"
   period              = 60
   statistic           = "Average"
-  threshold           = 0
+  threshold           = var.target_sqs_messages
   alarm_description   = "Scale in if number of visible messages in SQS is below the threshold."
   dimensions = {
     QueueName = var.sqs_queue_name
   }
 
-  alarm_actions = [aws_appautoscaling_policy.scale_in.arn]
+  alarm_actions = [aws_appautoscaling_policy.scale_in[count.index].arn]
 }
 
 # ---------------------------------------------------
