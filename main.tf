@@ -188,21 +188,21 @@ locals {
 # ---------------------------------------------------
 #    CloudWatch Metric Alarms for SQS
 # ---------------------------------------------------
-resource aws_cloudwatch_metric_alarm sqs_messages_visible {
-  count               = var.sqs_queue_name != "" ? 1 : 0
-  alarm_name          = "${var.name_prefix}-${var.zenv}-${var.service_name}-SQS-Messages-Visible"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "ApproximateNumberOfMessagesVisible"
-  namespace           = "AWS/SQS"
-  period              = 60
-  statistic           = "Average"
-  threshold           = var.target_sqs_messages
-  alarm_description   = "Alarm if number of visible messages in SQS exceeds the threshold."
-  dimensions = {
-    QueueName = var.sqs_queue_name
-  }
-}
+# resource aws_cloudwatch_metric_alarm sqs_messages_visible {
+#   count               = var.sqs_queue_name != "" ? 1 : 0
+#   alarm_name          = "${var.name_prefix}-${var.zenv}-${var.service_name}-SQS-Messages-Visible"
+#   comparison_operator = "GreaterThanOrEqualToThreshold"
+#   evaluation_periods  = 1
+#   metric_name         = "ApproximateNumberOfMessagesVisible"
+#   namespace           = "AWS/SQS"
+#   period              = 60
+#   statistic           = "Average"
+#   threshold           = var.target_sqs_messages
+#   alarm_description   = "Alarm if number of visible messages in SQS exceeds the threshold."
+#   dimensions = {
+#     QueueName = var.sqs_queue_name
+#   }
+# }
 
 # ---------------------------------------------------
 #    App Autoscaling Policy: Scale Out
@@ -253,6 +253,7 @@ resource aws_appautoscaling_policy scale_in {
     }
   }
 }
+
 
 # ---------------------------------------------------
 #    CloudWatch Alarms: Scale Out
