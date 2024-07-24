@@ -174,11 +174,13 @@ locals {
       metric_upper_bound    = i < ceil(var.max_task_count / var.target_sqs_messages) - 1 ? (i + 1) * var.target_sqs_messages - 1 : null
     }
   ]
-  # Add a step adjustment with an unspecified upper bound if the last step does not have an upper bound
+  
   final_step = [
-    for step in local.scale_steps_temp : step.metric_upper_bound == null ? step : null
+    for step in local.scale_steps_temp :
+    step.metric_upper_bound == null ? step : null
   ]
-  scale_steps = final_step != [null] ? local.scale_steps_temp : concat(local.scale_steps_temp, [{
+  
+  scale_steps = length(compact(local.final_step)) > 0 ? local.scale_steps_temp : concat(local.scale_steps_temp, [{
     adjustment            = ceil(var.max_task_count / var.target_sqs_messages)
     metric_lower_bound    = ceil(var.max_task_count / var.target_sqs_messages) * var.target_sqs_messages
     metric_upper_bound    = null
