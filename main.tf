@@ -214,16 +214,16 @@ resource aws_appautoscaling_policy scale_out {
   count              = var.sqs_queue_name != "" ? 1 : 0
   name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-out"
   policy_type        = "StepScaling"
-  resource_id        = aws_appautoscaling_target.ecs_service.resource_id
-  scalable_dimension = aws_appautoscaling_target.ecs_service.scalable_dimension
-  service_namespace  = aws_appautoscaling_target.ecs_service.service_namespace
+  resource_id        = aws_appautoscaling_target.ecs_service[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_service[0].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_service[0].service_namespace
 
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
     cooldown                = var.scale_out_cooldown
     metric_aggregation_type = "Average"
 
-    dynamic "step_adjustment" {
+    dynamic step_adjustment {
       for_each = local.scale_steps
       content {
         scaling_adjustment          = step_adjustment.value.adjustment
@@ -241,9 +241,9 @@ resource aws_appautoscaling_policy scale_in {
   count              = var.sqs_queue_name != "" ? 1 : 0
   name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-in"
   policy_type        = "StepScaling"
-  resource_id        = aws_appautoscaling_target.ecs_service.resource_id
-  scalable_dimension = aws_appautoscaling_target.ecs_service.scalable_dimension
-  service_namespace  = aws_appautoscaling_target.ecs_service.service_namespace
+  resource_id        = aws_appautoscaling_target.ecs_service[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_service[0].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_service[0].service_namespace
 
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
@@ -251,7 +251,7 @@ resource aws_appautoscaling_policy scale_in {
     metric_aggregation_type = "Average"
 
     step_adjustment {
-      scaling_adjustment = -1
+      scaling_adjustment          = -1
       metric_interval_upper_bound = 0
     }
   }
@@ -275,7 +275,7 @@ resource aws_cloudwatch_metric_alarm scale_out_alarm {
     QueueName = var.sqs_queue_name
   }
 
-  alarm_actions = [aws_appautoscaling_policy.scale_out.arn]
+  alarm_actions = [aws_appautoscaling_policy.scale_out[0].arn]
 }
 
 # ---------------------------------------------------
@@ -296,5 +296,5 @@ resource aws_cloudwatch_metric_alarm scale_in_alarm {
     QueueName = var.sqs_queue_name
   }
 
-  alarm_actions = [aws_appautoscaling_policy.scale_in.arn]
+  alarm_actions = [aws_appautoscaling_policy.scale_in[0].arn]
 }
