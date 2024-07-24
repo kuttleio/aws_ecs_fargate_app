@@ -171,16 +171,19 @@ locals {
     for i in range(0, ceil(var.max_task_count / var.target_sqs_messages)) : {
       adjustment            = i + 1
       metric_lower_bound    = i * var.target_sqs_messages
-      metric_upper_bound    = i < ceil(var.max_task_count / var.target_sqs_messages) - 1 ? (i + 1) * var.target_sqs_messages - 1 : null
+      metric_upper_bound    = i < ceil(var.max_task_count / var.target_sqs_messages) - 1 ? (i + 1) * var.target_sqs_messages : null
     }
   ]
-  has_final_step = length([for step in local.scale_steps_temp : step if step.metric_upper_bound == null]) > 0
+
+  has_final_step = length([for step in local.scale_steps_temp : step.metric_upper_bound == null]) > 0
+
   scale_steps = local.has_final_step ? local.scale_steps_temp : concat(local.scale_steps_temp, [{
-    adjustment = ceil(var.max_task_count / var.target_sqs_messages)
-    metric_lower_bound = ceil(var.max_task_count / var.target_sqs_messages) * var.target_sqs_messages
-    metric_upper_bound = null
+    adjustment            = ceil(var.max_task_count / var.target_sqs_messages)
+    metric_lower_bound    = ceil(var.max_task_count / var.target_sqs_messages) * var.target_sqs_messages
+    metric_upper_bound    = null
   }])
 }
+
 
 # ---------------------------------------------------
 #    CloudWatch Metric Alarms for SQS
@@ -222,7 +225,7 @@ resource aws_appautoscaling_policy scale_out {
       content {
         scaling_adjustment          = step_adjustment.value.adjustment
         metric_interval_lower_bound = step_adjustment.value.metric_lower_bound
-        metric_interval_upper_bound = step_adjustment.value.metric_upper_bound
+        metric_interval_upper_bound = step_adjustment.value.metric_upper_bound != null ? step_adjustment.value.metric_upper_bound : ""
       }
     }
   }
