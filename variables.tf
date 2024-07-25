@@ -263,23 +263,23 @@ variable max_task_count {
 variable scale_in_cooldown {
   description = "Cooldown period for scaling in"
   type        = number
-  default     = 120
+  default     = 60
 }
 
 variable scale_out_cooldown {
   description = "Cooldown period for scaling out"
   type        = number
-  default     = 120
+  default     = 60
 }
 
 variable target_sqs_messages {
   description = "Number of SQS messages per task"
   type        = number
-  default     = 10
+  default     = 1
 }
 
 variable sqs_queue_name {
-  description = "SQS Q name for scaling"
+  description = "SQS queue name for scaling"
   type        = string
   default     = ""
 }
