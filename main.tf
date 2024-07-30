@@ -185,56 +185,6 @@ resource aws_appautoscaling_policy scale_out {
   policy_type        = "StepScaling"
   resource_id        = aws_appautoscaling_target.ecs_service_target[count.index].resource_id
   scalable_dimension = aws_appautoscaling_target.ecs_service_target[count.index].scalable_dimension
-  service_namespace  = "ecs"
-
-  step_scaling_policy_configuration {
-    adjustment_type         = "ChangeInCapacity"
-    cooldown                = var.scale_out_cooldown
-    metric_aggregation_type = "Average"
-
-    dynamic step_adjustment {
-      for_each = local.scale_steps
-      content {
-        scaling_adjustment          = step_adjustment.value.adjustment
-        metric_interval_lower_bound = step_adjustment.value.metric_lower_bound
-        metric_interval_upper_bound = step_adjustment.value.metric_upper_bound != null ? step_adjustment.value.metric_upper_bound : ""
-      }
-    }
-  }
-}
-
-# ---------------------------------------------------
-#    App Autoscaling Policy: Scale In
-# ---------------------------------------------------
-resource aws_appautoscaling_policy scale_in {
-  count              = var.sqs_queue_name != "" ? 1 : 0
-  name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-in"
-  policy_type        = "StepScaling"
-  resource_id        = aws_appautoscaling_target.ecs_service_target[count.index].resource_id
-  scalable_dimension = aws_appautoscaling_target[count.index].scalable_dimension
-  service_namespace  = "ecs"
-
-  step_scaling_policy_configuration {
-    adjustment_type         = "ChangeInCapacity"
-    cooldown                = var.scale_in_cooldown
-    metric_aggregation_type = "Average"
-
-    step_adjustment {
-      scaling_adjustment          = -1
-      metric_interval_upper_bound = 0
-    }
-  }
-}
-
-# ---------------------------------------------------
-#    App Autoscaling Policy: Scale Out
-# ---------------------------------------------------
-resource aws_appautoscaling_policy scale_out {
-  count              = var.sqs_queue_name != "" ? 1 : 0
-  name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-out"
-  policy_type        = "StepScaling"
-  resource_id        = aws_appautoscaling_target.ecs_service_target[count.index].resource_id
-  scalable_dimension = aws_appautoscaling_target.ecs_service_target[count.index].scalable_dimension
   service_namespace  = aws_appautoscaling_target.ecs_service_target[count.index].service_namespace
 
   step_scaling_policy_configuration {
