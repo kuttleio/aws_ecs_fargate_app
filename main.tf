@@ -55,7 +55,7 @@ resource aws_ecs_service main {
     subnets         = var.subnets
   }
 
-  dynamic "load_balancer" {
+  dynamic load_balancer {
     for_each = var.public ? [1] : []
     content {
       target_group_arn = var.target_group_arn
@@ -166,43 +166,14 @@ resource aws_ecs_task_definition main {
 # ---------------------------------------------------
 #   Autoscaling settings
 # ---------------------------------------------------
-locals {
-  scale_steps_temp = [
-    for i in range(0, ceil(var.max_task_count / var.target_sqs_messages)) : {
-      adjustment            = i + 1
-      metric_lower_bound    = i * var.target_sqs_messages
-      metric_upper_bound    = i < ceil(var.max_task_count / var.target_sqs_messages) - 1 ? (i + 1) * var.target_sqs_messages : null
-    }
-  ]
-
-  has_final_step = length([for step in local.scale_steps_temp : step.metric_upper_bound == null]) > 0
-
-  scale_steps = local.has_final_step ? local.scale_steps_temp : concat(local.scale_steps_temp, [{
-    adjustment            = ceil(var.max_task_count / var.target_sqs_messages)
-    metric_lower_bound    = ceil(var.max_task_count / var.target_sqs_messages) * var.target_sqs_messages
-    metric_upper_bound    = null
-  }])
+resource aws_appautoscaling_target ecs_service_target {
+  count              = var.sqs_queue_name != "" ? 1 : 0
+  max_capacity       = var.max_task_count
+  min_capacity       = 0
+  resource_id        = "service/${var.cluster_name}/${aws_ecs_service.main.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
 }
-
-
-# ---------------------------------------------------
-#    CloudWatch Metric Alarms for SQS
-# ---------------------------------------------------
-# resource aws_cloudwatch_metric_alarm sqs_messages_visible {
-#   count               = var.sqs_queue_name != "" ? 1 : 0
-#   alarm_name          = "${var.name_prefix}-${var.zenv}-${var.service_name}-SQS-Messages-Visible"
-#   comparison_operator = "GreaterThanOrEqualToThreshold"
-#   evaluation_periods  = 1
-#   metric_name         = "ApproximateNumberOfMessagesVisible"
-#   namespace           = "AWS/SQS"
-#   period              = 60
-#   statistic           = "Average"
-#   threshold           = var.target_sqs_messages
-#   alarm_description   = "Alarm if number of visible messages in SQS exceeds the threshold."
-#   dimensions = {
-#     QueueName = var.sqs_queue_name
-#   }
-# }
 
 # ---------------------------------------------------
 #    App Autoscaling Policy: Scale Out
@@ -217,16 +188,12 @@ resource aws_appautoscaling_policy scale_out {
 
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
-    cooldown                = var.scale_out_cooldown
+    cooldown                = var.scale_cooldown
     metric_aggregation_type = "Average"
 
-    dynamic step_adjustment {
-      for_each = local.scale_steps
-      content {
-        scaling_adjustment          = step_adjustment.value.adjustment
-        metric_interval_lower_bound = step_adjustment.value.metric_lower_bound
-        metric_interval_upper_bound = step_adjustment.value.metric_upper_bound != null ? step_adjustment.value.metric_upper_bound : ""
-      }
+    step_adjustment {
+      scaling_adjustment          = 1
+      metric_interval_lower_bound = 0
     }
   }
 }
@@ -244,7 +211,7 @@ resource aws_appautoscaling_policy scale_in {
 
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
-    cooldown                = var.scale_in_cooldown
+    cooldown                = var.scale_cooldown
     metric_aggregation_type = "Average"
 
     step_adjustment {
@@ -253,7 +220,6 @@ resource aws_appautoscaling_policy scale_in {
     }
   }
 }
-
 
 # ---------------------------------------------------
 #    CloudWatch Alarms: Scale Out
@@ -267,7 +233,7 @@ resource aws_cloudwatch_metric_alarm scale_out_alarm {
   namespace           = "AWS/SQS"
   period              = 60
   statistic           = "Average"
-  threshold           = var.target_sqs_messages
+  threshold           = var.scale_threshold
   alarm_description   = "Scale out if number of visible messages in SQS exceeds the threshold."
   dimensions = {
     QueueName = var.sqs_queue_name
@@ -288,23 +254,11 @@ resource aws_cloudwatch_metric_alarm scale_in_alarm {
   namespace           = "AWS/SQS"
   period              = 60
   statistic           = "Average"
-  threshold           = var.target_sqs_messages
+  threshold           = var.scale_threshold
   alarm_description   = "Scale in if number of visible messages in SQS is below the threshold."
   dimensions = {
     QueueName = var.sqs_queue_name
   }
 
   alarm_actions = [aws_appautoscaling_policy.scale_in[count.index].arn]
-}
-
-# ---------------------------------------------------
-#    App Autoscaling Target
-# ---------------------------------------------------
-resource aws_appautoscaling_target ecs_service_target {
-  count              = var.sqs_queue_name != "" ? 1 : 0
-  max_capacity       = var.max_task_count
-  min_capacity       = var.min_task_count
-  resource_id        = "service/${var.cluster_name}/${var.name_prefix}-${var.zenv}-${var.service_name}"
-  scalable_dimension = "ecs:service:DesiredCount"
-  service_namespace  = "ecs"
 }
