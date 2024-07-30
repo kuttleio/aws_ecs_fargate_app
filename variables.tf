@@ -266,7 +266,7 @@ variable scale_cooldown {
   default     = 300
 }
 
-variable threshold {
+variable scale_threshold {
   description = "Threshold for SQS messages to trigger scaling"
   type        = number
   default     = 10

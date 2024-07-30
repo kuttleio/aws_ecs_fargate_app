@@ -170,7 +170,7 @@ locals {
   scale_steps = [
     {
       adjustment            = 1
-      metric_lower_bound    = var.threshold
+      metric_lower_bound    = var.scale_threshold
       metric_upper_bound    = null
     }
   ]
@@ -238,7 +238,7 @@ resource aws_cloudwatch_metric_alarm scale_out_alarm {
   namespace           = "AWS/SQS"
   period              = 60
   statistic           = "Average"
-  threshold           = var.threshold
+  threshold           = var.scale_threshold
   alarm_description   = "Scale out if number of visible messages in SQS exceeds the threshold."
   dimensions = {
     QueueName = var.sqs_queue_name
@@ -259,7 +259,7 @@ resource aws_cloudwatch_metric_alarm scale_in_alarm {
   namespace           = "AWS/SQS"
   period              = 60
   statistic           = "Average"
-  threshold           = var.threshold
+  threshold           = var.scale_threshold
   alarm_description   = "Scale in if number of visible messages in SQS is below the threshold."
   dimensions = {
     QueueName = var.sqs_queue_name
