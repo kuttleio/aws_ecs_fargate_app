@@ -227,45 +227,53 @@ resource aws_appautoscaling_policy scale_in {
 }
 
 # ---------------------------------------------------
-#    CloudWatch Alarms: Scale Out
+#    App Autoscaling Policy: Scale Out
 # ---------------------------------------------------
-resource aws_cloudwatch_metric_alarm scale_out_alarm {
-  count               = var.sqs_queue_name != "" ? 1 : 0
-  alarm_name          = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-out-alarm"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "ApproximateNumberOfMessagesVisible"
-  namespace           = "AWS/SQS"
-  period              = 60
-  statistic           = "Average"
-  threshold           = var.target_sqs_messages
-  alarm_description   = "Scale out if number of visible messages in SQS exceeds the threshold."
-  dimensions = {
-    QueueName = var.sqs_queue_name
-  }
+resource aws_appautoscaling_policy scale_out {
+  count              = var.sqs_queue_name != "" ? 1 : 0
+  name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-out"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.ecs_service_target[count.index].resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_service_target[count.index].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_service_target[count.index].service_namespace
 
-  alarm_actions = [aws_appautoscaling_policy.scale_out[count.index].arn]
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = var.scale_out_cooldown
+    metric_aggregation_type = "Average"
+
+    dynamic step_adjustment {
+      for_each = local.scale_steps
+      content {
+        scaling_adjustment          = step_adjustment.value.adjustment
+        metric_interval_lower_bound = step_adjustment.value.metric_lower_bound
+        metric_interval_upper_bound = step_adjustment.value.metric_upper_bound != null ? step_adjustment.value.metric_upper_bound : ""
+      }
+    }
+  }
 }
 
 # ---------------------------------------------------
-#    CloudWatch Alarms: Scale In
+#    App Autoscaling Policy: Scale In
 # ---------------------------------------------------
-resource aws_cloudwatch_metric_alarm scale_in_alarm {
-  count               = var.sqs_queue_name != "" ? 1 : 0
-  alarm_name          = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-in-alarm"
-  comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "ApproximateNumberOfMessagesVisible"
-  namespace           = "AWS/SQS"
-  period              = 60
-  statistic           = "Average"
-  threshold           = var.target_sqs_messages - 1
-  alarm_description   = "Scale in if number of visible messages in SQS is below the threshold."
-  dimensions = {
-    QueueName = var.sqs_queue_name
-  }
+resource aws_appautoscaling_policy scale_in {
+  count              = var.sqs_queue_name != "" ? 1 : 0
+  name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-in"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.ecs_service_target[count.index].resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_service_target[count.index].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_service_target[count.index].service_namespace
 
-  alarm_actions = [aws_appautoscaling_policy.scale_in[count.index].arn]
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = var.scale_in_cooldown
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      scaling_adjustment          = -1
+      metric_interval_upper_bound = 0
+    }
+  }
 }
 
 # ---------------------------------------------------
