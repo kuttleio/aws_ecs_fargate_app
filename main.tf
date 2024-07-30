@@ -167,15 +167,17 @@ resource aws_ecs_task_definition main {
 #   Autoscaling settings
 # ---------------------------------------------------
 locals {
+  scale_threshold = coalesce(var.scale_threshold, 10)
+
   scale_steps = [
     {
       adjustment            = 1
-      metric_lower_bound    = var.scale_threshold
-      metric_upper_bound    = var.scale_threshold * 2 - 1
+      metric_lower_bound    = local.scale_threshold
+      metric_upper_bound    = local.scale_threshold * 2 - 1
     },
     {
       adjustment            = 1
-      metric_lower_bound    = var.scale_threshold * 2
+      metric_lower_bound    = local.scale_threshold * 2
       metric_upper_bound    = null  # Unspecified upper bound
     }
   ]
