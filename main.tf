@@ -205,7 +205,7 @@ resource aws_appautoscaling_policy scale_out {
   policy_type        = "StepScaling"
   resource_id        = aws_appautoscaling_target.ecs_service_target[count.index].resource_id
   scalable_dimension = aws_appautoscaling_target.ecs_service_target[count.index].scalable_dimension
-  service_namespace  = aws_appautoscaling_target.count.index.service_namespace
+  service_namespace  = aws_appautoscaling_target.ecs_service_target[count.index].service_namespace
 
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
@@ -217,7 +217,7 @@ resource aws_appautoscaling_policy scale_out {
       content {
         scaling_adjustment          = step_adjustment.value.adjustment
         metric_interval_lower_bound = step_adjustment.value.metric_lower_bound
-        metric_interval_upper_bound = step_adjustment.value.metric_upper_bound != null ? step_adjustment.value.metric_upper_bound : ""
+        metric_interval_upper_bound = step_adjustment.value.metric_upper_bound != null ? step_adjustment.value.metric_upper_bound : null
       }
     }
   }
