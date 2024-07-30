@@ -166,60 +166,30 @@ resource aws_ecs_task_definition main {
 # ---------------------------------------------------
 #   Autoscaling settings
 # ---------------------------------------------------
-locals {
-  scale_steps = [
-    {
-      adjustment            = 1
-      metric_lower_bound    = 0
-      metric_upper_bound    = var.scale_threshold - 1
-    },
-    {
-      adjustment            = 1
-      metric_lower_bound    = var.scale_threshold
-      metric_upper_bound    = var.scale_threshold * 2 - 1
-    },
-    {
-      adjustment            = 1
-      metric_lower_bound    = var.scale_threshold * 2
-      metric_upper_bound    = var.scale_threshold * 3 - 1
-    },
-    {
-      adjustment            = 1
-      metric_lower_bound    = var.scale_threshold * 3
-      metric_upper_bound    = var.scale_threshold * 4 - 1
-    },
-    {
-      adjustment            = 1
-      metric_lower_bound    = var.scale_threshold * 4
-      metric_upper_bound    = null # Last step must have no upper bound
-    }
-  ]
+resource aws_appautoscaling_target ecs_target {
+  max_capacity       = var.max_task_count
+  min_capacity       = 0
+  resource_id        = "service/${var.cluster_name}/${aws_ecs_service.main.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
 }
 
-# ---------------------------------------------------
-#    App Autoscaling Policy: Scale Out
-# ---------------------------------------------------
-resource aws_appautoscaling_policy scale_out {
-  count              = var.sqs_queue_name != "" ? 1 : 0
-  name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-out"
-  policy_type        = "StepScaling"
-  resource_id        = aws_appautoscaling_target.ecs_service_target[count.index].resource_id
-  scalable_dimension = aws_appautoscaling_target.ecs_service_target[count.index].scalable_dimension
-  service_namespace  = aws_appautoscaling_target.ecs_service_target[count.index].service_namespace
+resource aws_appautoscaling_policy ecs_policy {
+  name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-sqs-scaling-policy"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
 
-  step_scaling_policy_configuration {
-    adjustment_type         = "ChangeInCapacity"
-    cooldown                = var.scale_cooldown
-    metric_aggregation_type = "Average"
-
-    dynamic step_adjustment {
-      for_each = local.scale_steps
-      content {
-        scaling_adjustment          = step_adjustment.value.adjustment
-        metric_interval_lower_bound = step_adjustment.value.metric_lower_bound
-        metric_interval_upper_bound = step_adjustment.value.metric_upper_bound != null ? step_adjustment.value.metric_upper_bound : null
-      }
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "SQSQueueMessagesVisible"
+      resource_label         = "${data.aws_sqs_queue.service_queue.arn}"
     }
+
+    target_value       = 1
+    scale_in_cooldown  = var.scale_cooldown
+    scale_out_cooldown = var.scale_cooldown
   }
 }
 
