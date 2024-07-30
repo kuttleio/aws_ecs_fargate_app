@@ -55,7 +55,7 @@ resource aws_ecs_service main {
     subnets         = var.subnets
   }
 
-  dynamic "load_balancer" {
+  dynamic load_balancer {
     for_each = var.public ? [1] : []
     content {
       target_group_arn = var.target_group_arn
@@ -185,17 +185,20 @@ resource aws_appautoscaling_policy scale_out {
   policy_type        = "StepScaling"
   resource_id        = aws_appautoscaling_target.ecs_service_target[count.index].resource_id
   scalable_dimension = aws_appautoscaling_target.ecs_service_target[count.index].scalable_dimension
-  service_namespace  = aws_appautoscaling_target[count.index].service_namespace
+  service_namespace  = "ecs"
 
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
     cooldown                = var.scale_out_cooldown
     metric_aggregation_type = "Average"
 
-    step_adjustment {
-      scaling_adjustment          = 1
-      metric_interval_lower_bound = var.target_sqs_messages
-      metric_interval_upper_bound = null
+    dynamic step_adjustment {
+      for_each = local.scale_steps
+      content {
+        scaling_adjustment          = step_adjustment.value.adjustment
+        metric_interval_lower_bound = step_adjustment.value.metric_lower_bound
+        metric_interval_upper_bound = step_adjustment.value.metric_upper_bound != null ? step_adjustment.value.metric_upper_bound : ""
+      }
     }
   }
 }
@@ -208,8 +211,8 @@ resource aws_appautoscaling_policy scale_in {
   name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-in"
   policy_type        = "StepScaling"
   resource_id        = aws_appautoscaling_target.ecs_service_target[count.index].resource_id
-  scalable_dimension = aws_appautoscaling_target.ecs_service_target[count.index].scalable_dimension
-  service_namespace  = aws_appautoscaling_target[count.index].service_namespace
+  scalable_dimension = aws_appautoscaling_target[count.index].scalable_dimension
+  service_namespace  = "ecs"
 
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
@@ -218,7 +221,7 @@ resource aws_appautoscaling_policy scale_in {
 
     step_adjustment {
       scaling_adjustment          = -1
-      metric_interval_upper_bound = var.target_sqs_messages - 1
+      metric_interval_upper_bound = 0
     }
   }
 }
