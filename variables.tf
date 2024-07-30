@@ -249,37 +249,31 @@ variable disk_size_in_gib {
 }
 
 variable min_task_count {
-  description = "Minimum number of tasks for the ECS service"
+  description = "Min number of tasks for the ECS service"
   type        = number
   default     = 0
 }
 
 variable max_task_count {
-  description = "Maximum number of tasks for the ECS service"
+  description = "Max number of tasks for the ECS service"
   type        = number
   default     = 1
 }
 
-variable scale_in_cooldown {
-  description = "Cooldown period for scaling in"
+variable scale_cooldown {
+  description = "Cooldown period for scaling in and out"
   type        = number
-  default     = 60
+  default     = 300
 }
 
-variable scale_out_cooldown {
-  description = "Cooldown period for scaling out"
+variable threshold {
+  description = "Threshold for SQS messages to trigger scaling"
   type        = number
-  default     = 60
-}
-
-variable target_sqs_messages {
-  description = "Number of SQS messages per task"
-  type        = number
-  default     = 1
+  default     = 10
 }
 
 variable sqs_queue_name {
-  description = "SQS queue name for scaling"
+  description = "SQS name for scaling"
   type        = string
   default     = ""
 }
