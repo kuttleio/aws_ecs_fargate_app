@@ -166,7 +166,8 @@ resource aws_ecs_task_definition main {
 # ---------------------------------------------------
 #   Autoscaling settings
 # ---------------------------------------------------
-resource aws_appautoscaling_target ecs_target {
+resource aws_appautoscaling_target ecs_service_target {
+  count              = var.sqs_queue_name != "" ? 1 : 0
   max_capacity       = var.max_task_count
   min_capacity       = 0
   resource_id        = "service/${var.cluster_name}/${aws_ecs_service.main.name}"
@@ -174,22 +175,26 @@ resource aws_appautoscaling_target ecs_target {
   service_namespace  = "ecs"
 }
 
-resource aws_appautoscaling_policy ecs_policy {
-  name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-sqs-scaling-policy"
-  policy_type        = "TargetTrackingScaling"
-  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
-  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
-  service_namespace  = aws_appautoscaling_target.ecs_target.service_namespace
+# ---------------------------------------------------
+#    App Autoscaling Policy: Scale Out
+# ---------------------------------------------------
+resource aws_appautoscaling_policy scale_out {
+  count              = var.sqs_queue_name != "" ? 1 : 0
+  name               = "${var.name_prefix}-${var.zenv}-${var.service_name}-scale-out"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.ecs_service_target[count.index].resource_id
+  scalable_dimension = aws_appautoscaling_target.ecs_service_target[count.index].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.ecs_service_target[count.index].service_namespace
 
-  target_tracking_scaling_policy_configuration {
-    predefined_metric_specification {
-      predefined_metric_type = "SQSQueueMessagesVisible"
-      resource_label         = "${data.aws_sqs_queue.service_queue.arn}"
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = var.scale_cooldown
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      scaling_adjustment          = 1
+      metric_interval_lower_bound = 0
     }
-
-    target_value       = 1
-    scale_in_cooldown  = var.scale_cooldown
-    scale_out_cooldown = var.scale_cooldown
   }
 }
 
@@ -256,16 +261,4 @@ resource aws_cloudwatch_metric_alarm scale_in_alarm {
   }
 
   alarm_actions = [aws_appautoscaling_policy.scale_in[count.index].arn]
-}
-
-# ---------------------------------------------------
-#    App Autoscaling Target
-# ---------------------------------------------------
-resource aws_appautoscaling_target ecs_service_target {
-  count              = var.sqs_queue_name != "" ? 1 : 0
-  max_capacity       = var.max_task_count
-  min_capacity       = 0
-  resource_id        = "service/${var.cluster_name}/${var.name_prefix}-${var.zenv}-${var.service_name}"
-  scalable_dimension = "ecs:service:DesiredCount"
-  service_namespace  = "ecs"
 }
