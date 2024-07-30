@@ -257,7 +257,7 @@ variable min_task_count {
 variable max_task_count {
   description = "Max number of tasks for the ECS service"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable scale_cooldown {
