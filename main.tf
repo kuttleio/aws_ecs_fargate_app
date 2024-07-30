@@ -171,7 +171,7 @@ locals {
     {
       adjustment            = 1
       metric_lower_bound    = var.scale_threshold
-      metric_upper_bound    = null
+      metric_upper_bound    = 1000 # Arbitrary large number
     }
   ]
 }
@@ -197,7 +197,7 @@ resource aws_appautoscaling_policy scale_out {
       content {
         scaling_adjustment          = step_adjustment.value.adjustment
         metric_interval_lower_bound = step_adjustment.value.metric_lower_bound
-        metric_interval_upper_bound = step_adjustment.value.metric_upper_bound != null ? step_adjustment.value.metric_upper_bound : ""
+        metric_interval_upper_bound = step_adjustment.value.metric_upper_bound
       }
     }
   }
