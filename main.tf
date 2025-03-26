@@ -71,6 +71,10 @@ resource aws_ecs_service main {
   lifecycle {
     ignore_changes = [desired_count]
   }
+
+  lifecycle {
+    ignore_changes = [desired_count]
+  }
 }
 
 # ---------------------------------------------------
